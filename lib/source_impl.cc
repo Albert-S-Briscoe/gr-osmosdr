@@ -193,6 +193,7 @@ source_impl::source_impl( const std::string &args )
   dev_types.push_back("sdr-ip");
   dev_types.push_back("netsdr");
   dev_types.push_back("cloudiq");
+  dev_types.push_back("cloudsdr");
 #endif
 
   for (std::string arg : arg_list) {
@@ -364,7 +365,8 @@ source_impl::source_impl( const std::string &args )
          dict.count("sdr-iq") ||
          dict.count("sdr-ip") ||
          dict.count("netsdr") ||
-         dict.count("cloudiq") ) {
+         dict.count("cloudiq") ||
+         dict.count("cloudsdr") ) {
       rfspace_source_c_sptr src = make_rfspace_source_c( arg );
       block = src; iface = src.get();
     }
@@ -633,7 +635,7 @@ bool source_impl::set_gain_mode( bool automatic, size_t chan )
   for (source_iface *dev : _devs)
     for (size_t dev_chan = 0; dev_chan < dev->get_num_channels(); dev_chan++)
       if ( chan == channel++ ) {
-        if ( _gain_mode[ chan ] != automatic ) {
+        if ( (_gain_mode.count(chan) == 0) || (_gain_mode[ chan ] != automatic) ) {
           _gain_mode[ chan ] = automatic;
           bool mode = dev->set_gain_mode( automatic, dev_chan );
           if (!automatic) // reapply gain value when switched to manual mode
